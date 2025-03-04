@@ -76,8 +76,8 @@ public class JvmService {
   private long testDatabasePerformance() {
     long start = System.nanoTime();
     for (int i = 0; i < 100; i++) {
-      Person insertedPerson = personRepository.saveAndFlush(new Person("User " + i, new Random().nextInt(100)));
-      Optional<Person> newPerson = personRepository.findById(insertedPerson.getId());
+      Person insertedPerson = this.personRepository.saveAndFlush(new Person("User " + i, new Random().nextInt(100)));
+      Optional<Person> newPerson = this.personRepository.findById(insertedPerson.getId());
       if (newPerson.isEmpty()) {
         System.out.println("PERSON " + insertedPerson.getId() + " IS NULL!");
       }
@@ -107,7 +107,7 @@ public class JvmService {
   private long testAtomicVar() {
     long startAtomic = System.nanoTime();
     for (int i = 0; i < 1_000_000; i++) {
-      atomicCounter.incrementAndGet();
+      this.atomicCounter.incrementAndGet();
     }
     return (System.nanoTime() - startAtomic) / 1_000_000;
   }
@@ -115,22 +115,22 @@ public class JvmService {
   private long testVolatileVar() {
     long startVolatile = System.nanoTime();
     for (int i = 0; i < 1_000_000; i++) {
-      volatileCounter++;
+      this.volatileCounter++;
     }
     return (System.nanoTime() - startVolatile) / 1_000_000;
   }
 
   private long testAtomicVarUsingThreads() throws InterruptedException {
-    atomicCounter.set(0);
+    this.atomicCounter.set(0);
     long start = System.nanoTime();
-    this.runThreads(() -> atomicCounter.incrementAndGet());
+    this.runThreads(() -> this.atomicCounter.incrementAndGet());
     return (System.nanoTime() - start) / 1_000_000;
   }
 
   private long testVolatileVarUsingThreads() throws InterruptedException {
-    volatileCounter = 0;
+    this.volatileCounter = 0;
     long start = System.nanoTime();
-    this.runThreads(() -> volatileCounter++);
+    this.runThreads(() -> this.volatileCounter++);
     return (System.nanoTime() - start) / 1_000_000;
   }
 
@@ -244,7 +244,7 @@ public class JvmService {
   private long testFileIOPerformance() throws IOException {
     long start = System.nanoTime();
 
-    Resource resource = resourceLoader.getResource("classpath:test.txt");
+    Resource resource = this.resourceLoader.getResource("classpath:test.txt");
     Path path = resource.getFile().toPath();
 
     try (BufferedWriter writer = Files.newBufferedWriter(path)) {
