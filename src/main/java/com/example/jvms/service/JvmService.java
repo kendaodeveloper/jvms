@@ -7,11 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
@@ -27,14 +30,17 @@ public class JvmService {
 
   public String testPerformance() throws Exception {
     return "Normal Loop: " + testNormalLoop() + " ms\n" +
-        "Object Allocation: " + testObjectAllocation() + " ms\n" +
         "Streams Loop: " + testStreamLoop() + " ms\n" +
+        "Object Allocation: " + testObjectAllocation() + " ms\n" +
         "Database Performance (JPA): " + testDatabasePerformance() + " ms\n" +
         "Redis Performance: " + testRedisPerformance() + " ms\n" +
         "Atomic Var Loop: " + testAtomicVar() + " ms\n" +
         "Volatile Var Loop: " + testVolatileVar() + " ms\n" +
         "Atomic Var Loop using Threads: " + testAtomicVarUsingThreads() + " ms\n" +
-        "Volatile Var Loop using Threads: " + testVolatileVarUsingThreads() + " ms\n";
+        "Volatile Var Loop using Threads: " + testVolatileVarUsingThreads() + " ms\n" +
+        "String Concatenation: " + testStringConcatenation() + " ms\n" +
+        "File IO Performance : " + testFileIOPerformance() + " ms\n" +
+        "Collections Performance : " + testCollectionsPerformance() + " ms\n";
   }
 
   private long testNormalLoop() {
@@ -138,5 +144,116 @@ public class JvmService {
     }
     executor.shutdown();
     executor.awaitTermination(1, TimeUnit.MINUTES);
+  }
+
+  private long testStringConcatenation() {
+    long start = System.nanoTime();
+
+    String str = "";
+    for (int i = 0; i < 10000; i++) {
+      str += "a";
+    }
+
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < 10000; i++) {
+      sb.append("a");
+    }
+
+    return (System.nanoTime() - start) / 1_000_000;
+  }
+
+  private long testCollectionsPerformance() {
+    long start = System.nanoTime();
+
+    List<Integer> arrayList = new ArrayList<>();
+    List<Integer> linkedList = new LinkedList<>();
+    List<Integer> vector = new Vector<>(); // thread-safe
+
+    Set<Integer> hashSet = new HashSet<>();
+    Set<Integer> linkedHashSet = new LinkedHashSet<>();
+    Set<Integer> treeSet = new TreeSet<>();
+    Set<Integer> copyOnWriteSet = new CopyOnWriteArraySet<>(); // thread-safe
+
+    Map<Integer, Integer> hashMap = new HashMap<>();
+    Map<Integer, Integer> linkedHashMap = new LinkedHashMap<>();
+    Map<Integer, Integer> treeMap = new TreeMap<>();
+    Map<Integer, Integer> hashTable = new Hashtable<>(); // thread-safe
+    Map<Integer, Integer> concurrentHashMap = new ConcurrentHashMap<>(); // thread-safe
+
+    int dataSize = 100_000;
+
+    // Teste de inserção
+    long insertStart = System.nanoTime();
+
+    for (int i = 0; i < dataSize; i++) {
+      arrayList.add(i);
+      linkedList.add(i);
+      vector.add(i);
+
+      hashSet.add(i);
+      linkedHashSet.add(i);
+      treeSet.add(i);
+      copyOnWriteSet.add(i);
+
+      hashMap.put(i, i);
+      linkedHashMap.put(i, i);
+      treeMap.put(i, i);
+      hashTable.put(i, i);
+      concurrentHashMap.put(i, i);
+    }
+    long insertTime = (System.nanoTime() - insertStart) / 1_000_000;
+
+    // Teste de iteração
+    long iterateStart = System.nanoTime();
+
+    for (Integer i : arrayList) {
+    }
+    for (Integer i : linkedList) {
+    }
+    for (Integer i : vector) {
+    }
+
+    for (Integer i : hashSet) {
+    }
+    for (Integer i : linkedHashSet) {
+    }
+    for (Integer i : treeSet) {
+    }
+    for (Integer i : copyOnWriteSet) {
+    }
+
+    for (Integer i : hashMap.keySet()) {
+    }
+    for (Integer i : linkedHashMap.keySet()) {
+    }
+    for (Integer i : treeMap.keySet()) {
+    }
+    for (Integer i : hashTable.keySet()) {
+    }
+    for (Integer i : concurrentHashMap.keySet()) {
+    }
+
+    long iterateTime = (System.nanoTime() - iterateStart) / 1_000_000;
+
+    return (System.nanoTime() - start) / 1_000_000;
+  }
+
+  private long testFileIOPerformance() throws IOException {
+    long start = System.nanoTime();
+    Path path = Paths.get("testfile.txt");
+
+    try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+      for (int i = 0; i < 100000; i++) {
+        writer.write("Sample data line " + i + "\n");
+      }
+    }
+
+    try (BufferedReader reader = Files.newBufferedReader(path)) {
+      while (reader.readLine() != null) {
+      }
+    }
+
+    Files.delete(path);
+    return (System.nanoTime() - start) / 1_000_000;
   }
 }
