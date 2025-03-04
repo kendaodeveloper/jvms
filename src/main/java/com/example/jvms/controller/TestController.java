@@ -27,8 +27,8 @@ public class TestController {
     info.put("java.compiler", System.getProperty("java.compiler") == null ? "JIT" : System.getProperty("java.compiler"));
 
     info.put("java.class.version", System.getProperty("java.class.version"));
-    info.put("java.specification.version", System.getProperty("java.specification.version"));
-    info.put("java.vm.specification.version", System.getProperty("java.vm.specification.version"));
+    // info.put("java.specification.version", System.getProperty("java.specification.version"));
+    // info.put("java.vm.specification.version", System.getProperty("java.vm.specification.version"));
 
     info.put("os.name", System.getProperty("os.name"));
     info.put("os.arch", System.getProperty("os.arch"));
