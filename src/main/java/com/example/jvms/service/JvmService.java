@@ -4,7 +4,6 @@ import com.example.jvms.entity.Person;
 import com.example.jvms.repository.PersonRepository;
 import com.example.jvms.service.dto.DummyObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -14,6 +13,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,19 +31,23 @@ public class JvmService {
   @Autowired
   private ResourceLoader resourceLoader;
 
-  public String testPerformance() throws Exception {
-    return "Normal Loop: " + testNormalLoop() + " ms\n" +
-        "Streams Loop: " + testStreamLoop() + " ms\n" +
-        "Object Allocation: " + testObjectAllocation() + " ms\n" +
-        "Database Performance (JPA): " + testDatabasePerformance() + " ms\n" +
-        "Redis Performance: " + testRedisPerformance() + " ms\n" +
-        "Atomic Var Loop: " + testAtomicVar() + " ms\n" +
-        "Volatile Var Loop: " + testVolatileVar() + " ms\n" +
-        "Atomic Var Loop using Threads: " + testAtomicVarUsingThreads() + " ms\n" +
-        "Volatile Var Loop using Threads: " + testVolatileVarUsingThreads() + " ms\n" +
-        "String Concatenation: " + testStringConcatenation() + " ms\n" +
-        "File IO Performance : " + testFileIOPerformance() + " ms\n" +
-        "Collections Performance : " + testCollectionsPerformance() + " ms\n";
+  public Map<String, String> testPerformance() throws Exception {
+    Map<String, String> performanceMetrics = new HashMap<>();
+
+    performanceMetrics.put("Normal Loop", testNormalLoop() + " ms");
+    performanceMetrics.put("Streams Loop", testStreamLoop() + " ms");
+    performanceMetrics.put("Object Allocation", testObjectAllocation() + " ms");
+    performanceMetrics.put("Database Performance (JPA)", testDatabasePerformance() + " ms");
+    performanceMetrics.put("Redis Performance", testRedisPerformance() + " ms");
+    performanceMetrics.put("Atomic Var Loop", testAtomicVar() + " ms");
+    performanceMetrics.put("Volatile Var Loop", testVolatileVar() + " ms");
+    performanceMetrics.put("Atomic Var Loop using Threads", testAtomicVarUsingThreads() + " ms");
+    performanceMetrics.put("Volatile Var Loop using Threads", testVolatileVarUsingThreads() + " ms");
+    performanceMetrics.put("String Concatenation", testStringConcatenation() + " ms");
+    performanceMetrics.put("File IO Performance", testFileIOPerformance() + " ms");
+    performanceMetrics.put("Collections Performance", testCollectionsPerformance() + " ms");
+
+    return performanceMetrics;
   }
 
   private long testNormalLoop() {
@@ -244,8 +248,7 @@ public class JvmService {
   private long testFileIOPerformance() throws IOException {
     long start = System.nanoTime();
 
-    Resource resource = this.resourceLoader.getResource("classpath:test.txt");
-    Path path = resource.getFile().toPath();
+    Path path = Paths.get("/Users/kendao/Projetos/others/jvms/src/main/resources/test.txt");
 
     try (BufferedWriter writer = Files.newBufferedWriter(path)) {
       for (int i = 0; i < 100000; i++) {

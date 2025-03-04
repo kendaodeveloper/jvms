@@ -38,7 +38,7 @@ public class TestController {
   }
 
   @GetMapping("/test")
-  public String testJvm() throws Exception {
+  public Map<String, String> testJvm() throws Exception {
     return this.jvmService.testPerformance();
   }
 }
