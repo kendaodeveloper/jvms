@@ -4,6 +4,8 @@ import com.example.jvms.entity.Person;
 import com.example.jvms.repository.PersonRepository;
 import com.example.jvms.service.dto.DummyObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +14,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,6 +28,8 @@ public class JvmService {
   private PersonRepository personRepository;
   @Autowired
   private StringRedisTemplate redisTemplate;
+  @Autowired
+  private ResourceLoader resourceLoader;
 
   public String testPerformance() throws Exception {
     return "Normal Loop: " + testNormalLoop() + " ms\n" +
@@ -240,7 +243,9 @@ public class JvmService {
 
   private long testFileIOPerformance() throws IOException {
     long start = System.nanoTime();
-    Path path = Paths.get("testfile.txt");
+
+    Resource resource = resourceLoader.getResource("classpath:test.txt");
+    Path path = resource.getFile().toPath();
 
     try (BufferedWriter writer = Files.newBufferedWriter(path)) {
       for (int i = 0; i < 100000; i++) {
@@ -253,7 +258,8 @@ public class JvmService {
       }
     }
 
-    Files.delete(path);
+    // Files.delete(path);
+
     return (System.nanoTime() - start) / 1_000_000;
   }
 }
